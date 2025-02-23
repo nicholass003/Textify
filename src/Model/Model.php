@@ -49,6 +49,10 @@ interface Model{
 
 	public function setVariant(Variant $variant) : self;
 
+	public function getActorId() : string;
+
+	public function setActorId(string $actorId) : self;
+
 	public function getPosition() : Position;
 
 	public function setPosition(Position $position) : self;
