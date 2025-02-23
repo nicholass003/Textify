@@ -29,7 +29,6 @@ namespace nicholass003\Textify\Lib\Trait;
 use nicholass003\Textify\Lib\Exception\TextifyException;
 use nicholass003\Textify\Lib\Model\Variant;
 use pocketmine\entity\Entity;
-use Ramsey\Uuid\Rfc4122\UuidV4;
 use Ramsey\Uuid\Uuid;
 
 trait ActorTrait{
@@ -63,10 +62,10 @@ trait ActorTrait{
 	}
 
 	public function setActorId(string $actorId) : self{
-		if(Uuid::isValid($actorId) && Uuid::fromString($actorId) instanceof UuidV4){
+		if(Uuid::isValid($actorId)){
 			$this->actorId = $actorId;
 			return $this;
 		}
-		throw new TextifyException("Invalid UUID V4");
+		throw new TextifyException("Invalid UUID");
 	}
 }
