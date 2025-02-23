@@ -162,4 +162,3 @@ final class Text implements Model, \JsonSerializable{
 		];
 	}
 }
-;
