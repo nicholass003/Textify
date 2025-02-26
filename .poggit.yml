@@ -1,0 +1,10 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/nicholass003/Textify
+build-by-default: true
+branches:
+- main
+projects:
+  Textify:
+    path: ""
+    model: virion
+    type: library
+...
