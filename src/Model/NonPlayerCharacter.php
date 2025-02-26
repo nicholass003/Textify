@@ -29,24 +29,29 @@ namespace nicholass003\Textify\Lib\Model;
 use nicholass003\Textify\Lib\Trait\ActorTrait;
 use nicholass003\Textify\Lib\Trait\NameableTrait;
 use nicholass003\Textify\Lib\Trait\PositionTrait;
-use pocketmine\block\VanillaBlocks;
-use pocketmine\network\mcpe\convert\TypeConverter;
+use pocketmine\entity\Attribute;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\Human;
+use pocketmine\entity\Skin;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\network\mcpe\protocol\RemoveActorPacket;
 use pocketmine\network\mcpe\protocol\SetActorDataPacket;
+use pocketmine\network\mcpe\protocol\types\entity\Attribute as NetworkAttribute;
 use pocketmine\network\mcpe\protocol\types\entity\ByteMetadataProperty;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
-use pocketmine\network\mcpe\protocol\types\entity\FloatMetadataProperty;
-use pocketmine\network\mcpe\protocol\types\entity\IntMetadataProperty;
 use pocketmine\network\mcpe\protocol\types\entity\LongMetadataProperty;
+use pocketmine\network\mcpe\protocol\types\entity\MetadataProperty;
 use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
 use pocketmine\network\mcpe\protocol\types\entity\StringMetadataProperty;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use function array_map;
 
-final class Text implements Model, \JsonSerializable{
+final class NonPlayerCharacter extends Human implements Model, \JsonSerializable{
 	use ActorTrait;
 	use NameableTrait;
 	use PositionTrait;
@@ -55,6 +60,8 @@ final class Text implements Model, \JsonSerializable{
 		string $actorId,
 		string $text,
 		Position $position,
+		Skin $skin,
+		?CompoundTag $nbt = null,
 		int $actorRuntimeId = 0
 	){
 		$this->setText($text);
@@ -62,6 +69,14 @@ final class Text implements Model, \JsonSerializable{
 		$this->setActorRuntimeId($actorRuntimeId);
 		$this->setVariant(Variant::TEXT);
 		$this->setActorId($actorId);
+		$this->setSkin($skin);
+		if($nbt !== null){
+			$this->motion = EntityDataHelper::parseVec3($nbt, self::TAG_MOTION, true);
+		}else{
+			$this->motion = Vector3::zero();
+		}
+
+		$this->initEntity($nbt ?? new CompoundTag());
 	}
 
 	public function send(Player $player, Action $action) : void{
@@ -71,26 +86,17 @@ final class Text implements Model, \JsonSerializable{
 				AddActorPacket::create(
 					actorUniqueId: $this->actorRuntimeId,
 					actorRuntimeId: $this->actorRuntimeId,
-					type: EntityIds::FALLING_BLOCK,
+					type: EntityIds::PLAYER,
 					position: $this->position,
-					motion: null,
-					pitch: 0,
-					yaw: 0,
-					headYaw: 0,
-					bodyYaw: 0,
-					attributes: [],
-					metadata: [
-						EntityMetadataProperties::ALWAYS_SHOW_NAMETAG => new ByteMetadataProperty(1),
-						EntityMetadataProperties::BOUNDING_BOX_HEIGHT => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::BOUNDING_BOX_WIDTH => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::FLAGS => LongMetadataProperty::buildFromFlags([
-							EntityMetadataFlags::IMMOBILE => true,
-							EntityMetadataFlags::FIRE_IMMUNE => true
-						]),
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text),
-						EntityMetadataProperties::SCALE => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::VARIANT => new IntMetadataProperty(TypeConverter::getInstance()->getBlockTranslator()->internalIdToNetworkId(VanillaBlocks::AIR()->getStateId()))
-					],
+					motion: $this->getMotion(),
+					pitch: $this->location->pitch,
+					yaw: $this->location->yaw,
+					headYaw: $this->location->yaw,
+					bodyYaw: $this->location->yaw,
+					attributes: array_map(function(Attribute $attr) : NetworkAttribute{
+						return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue(), []);
+					}, $this->attributeMap->getAll()),
+					metadata: $this->internalMetadata(),
 					syncedProperties: new PropertySyncData([], []),
 					links: []
 				)
@@ -112,26 +118,17 @@ final class Text implements Model, \JsonSerializable{
 				AddActorPacket::create(
 					actorUniqueId: $this->actorRuntimeId,
 					actorRuntimeId: $this->actorRuntimeId,
-					type: EntityIds::FALLING_BLOCK,
+					type: EntityIds::PLAYER,
 					position: $this->position,
-					motion: null,
-					pitch: 0,
-					yaw: 0,
-					headYaw: 0,
-					bodyYaw: 0,
-					attributes: [],
-					metadata: [
-						EntityMetadataProperties::ALWAYS_SHOW_NAMETAG => new ByteMetadataProperty(1),
-						EntityMetadataProperties::BOUNDING_BOX_HEIGHT => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::BOUNDING_BOX_WIDTH => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::FLAGS => LongMetadataProperty::buildFromFlags([
-							EntityMetadataFlags::IMMOBILE => true,
-							EntityMetadataFlags::FIRE_IMMUNE => true
-						]),
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text),
-						EntityMetadataProperties::SCALE => new FloatMetadataProperty(0.0),
-						EntityMetadataProperties::VARIANT => new IntMetadataProperty(TypeConverter::getInstance()->getBlockTranslator()->internalIdToNetworkId(VanillaBlocks::AIR()->getStateId()))
-					],
+					motion: $this->getMotion(),
+					pitch: $this->location->pitch,
+					yaw: $this->location->yaw,
+					headYaw: $this->location->yaw,
+					bodyYaw: $this->location->yaw,
+					attributes: array_map(function(Attribute $attr) : NetworkAttribute{
+						return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue(), []);
+					}, $this->attributeMap->getAll()),
+					metadata: $this->internalMetadata(),
 					syncedProperties: new PropertySyncData([], []),
 					links: []
 				)
@@ -148,12 +145,32 @@ final class Text implements Model, \JsonSerializable{
 		}
 	}
 
+	/**
+	 * @return MetadataProperty[]
+	 */
+	private function internalMetadata() : array{
+		$networkData = $this->getAllNetworkData();
+		$networkData[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->text);
+		$networkData[EntityMetadataProperties::ALWAYS_SHOW_NAMETAG] = new ByteMetadataProperty(1);
+		$networkData[EntityMetadataProperties::FLAGS] = LongMetadataProperty::buildFromFlags([
+			EntityMetadataFlags::IMMOBILE => true,
+			EntityMetadataFlags::FIRE_IMMUNE => true
+		]);
+		return $networkData;
+	}
+
 	public function jsonSerialize() : mixed{
 		return [
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
 			Model::TEXT => $this->text,
-			Model::SKIN => null,
+			Model::SKIN => [
+				Model::SKIN_ID => $this->skin->getSkinId(),
+				Model::SKIN_DATA => $this->skin->getSkinData(),
+				Model::CAPE_DATA => $this->skin->getCapeData(),
+				Model::GEOMETRY_NAME => $this->skin->getGeometryName(),
+				Model::GEOMETRY_DATA => $this->skin->getGeometryData()
+			],
 			Model::POSITION => [
 				Model::POSITION_X => $this->position->x,
 				Model::POSITION_Y => $this->position->y,

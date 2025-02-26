@@ -41,6 +41,13 @@ interface Model{
 	public const POSITION_Z = "z";
 	public const POSITION_WORLD = "world";
 
+	public const SKIN = "skin";
+	public const SKIN_ID = "skin_id";
+	public const SKIN_DATA = "skin_data";
+	public const CAPE_DATA = "cape_data";
+	public const GEOMETRY_NAME = "geometry_name";
+	public const GEOMETRY_DATA = "geometry_data";
+
 	public function getActorRuntimeId() : int;
 
 	public function setActorRuntimeId(int $actorRuntimeId) : self;

@@ -24,17 +24,8 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Model;
+namespace nicholass003\Textify\Lib\Exception;
 
-use function strtolower;
+use Exception;
 
-enum Variant : string{
-	case NPC = "npc";
-	case TEXT = "text";
-
-	public static function fromString(string $name) : self{
-		return match(strtolower($name)){
-			"text" => self::TEXT,
-		};
-	}
-}
+final class TextifyInvalidDataException extends Exception{}

@@ -26,17 +26,68 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib;
 
+use nicholass003\Textify\Lib\Exception\TextifyInvalidDataException;
 use nicholass003\Textify\Lib\Model\Model;
+use nicholass003\Textify\Lib\Model\NonPlayerCharacter;
 use nicholass003\Textify\Lib\Model\Text;
 use nicholass003\Textify\Lib\Model\Variant;
+use pocketmine\entity\Skin;
+use pocketmine\math\Vector3;
+use pocketmine\Server;
 use pocketmine\world\Position;
 use Ramsey\Uuid\Uuid;
+use function is_array;
+use function json_decode;
 
 final class Textify{
 
-	public static function create(Variant $variant, string $text, Position $position, ?string $actorId = null) : Model{
+	public const TAG_SKIN = "skin";
+	public const TAG_COMPOUND = "compound";
+
+	/**
+	 * @param Variant     $variant
+	 * @param string      $text
+	 * @param Position    $position
+	 * @param string|null $actorId
+	 * @param array       $extraData
+	 *
+	 * @return Model
+	 */
+	public static function create(Variant $variant, string $text, Position $position, ?string $actorId = null, array $extraData = []) : Model{
+		$id = $actorId !== null ? $actorId : Uuid::uuid4()->toString();
 		return match($variant){
-			Variant::TEXT => new Text($actorId !== null ? $actorId : Uuid::uuid4()->toString(), $text, $position)
+			Variant::NPC => new NonPlayerCharacter($id, $text, $position, $extraData[self::TAG_SKIN], $extraData[self::TAG_COMPOUND] ?? null),
+			Variant::TEXT => new Text($id, $text, $position)
 		};
+	}
+
+	/**
+	 * @param string $json
+	 *
+	 * @return Model
+	 */
+	public static function fromString(string $json) : Model{
+		$data = json_decode($json, true);
+		if(is_array($data) && isset($data[Model::ACTOR_ID]) && isset($data[Model::VARIANT]) && isset($data[Model::TEXT]) && isset($data[Model::SKIN]) && isset($data[Model::POSITION])){
+			$skinData = $data[Model::SKIN];
+			$pos = $data[Model::POSITION];
+			return self::create(
+				Variant::fromString($data[Model::VARIANT]),
+				$data[Model::TEXT],
+				Position::fromObject(new Vector3($pos[Model::POSITION_X], $pos[Model::POSITION_Y], $pos[Model::POSITION_Z]), Server::getInstance()->getWorldManager()->getWorldByName($pos[Model::POSITION_WORLD])),
+				$data[Model::ACTOR_ID],
+				$skinData !== null ? [
+					self::TAG_SKIN => new Skin(
+						$skinData[Model::SKIN_ID],
+						$skinData[Model::SKIN_DATA],
+						$skinData[Model::CAPE_DATA],
+						$skinData[Model::GEOMETRY_NAME],
+						$skinData[Model::GEOMETRY_DATA]
+					)
+				] : null
+			);
+		}else{
+			throw new TextifyInvalidDataException("Malformed JSON data: Unable to parse model information");
+		}
 	}
 }
