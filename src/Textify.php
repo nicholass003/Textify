@@ -85,7 +85,7 @@ final class Textify{
 						$skinData[Model::GEOMETRY_NAME],
 						$skinData[Model::GEOMETRY_DATA]
 					)
-				] : null
+				] : []
 			);
 		}else{
 			throw new TextifyInvalidDataException("Malformed JSON data: Unable to parse model information");
