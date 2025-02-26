@@ -54,10 +54,36 @@ $phar->startBuffering();
 $directory = new RecursiveDirectoryIterator("$basePath/src");
 $iterator = new RecursiveIteratorIterator($directory);
 
+function getNamespaceFromFile(string $filePath) : ?string{
+	$namespace = null;
+	$handle = fopen($filePath, 'r');
+	if($handle){
+		while(($line = fgets($handle)) !== false){
+			if(preg_match('/^namespace\s+(.+?);$/', trim($line), $matches)){
+				$namespace = $matches[1];
+				break;
+			}
+		}
+		fclose($handle);
+	}
+	return $namespace;
+}
+
 foreach($iterator as $file){
 	if($file->isFile() && pathinfo($file->getPathname(), PATHINFO_EXTENSION) === 'php'){
-		$relativePath = str_replace("$basePath/", "", $file->getPathname());
-		$phar->addFile($file->getPathname(), $relativePath);
+		$namespace = getNamespaceFromFile($file->getPathname());
+		$className = basename($file->getPathname());
+
+		if($namespace !== null){
+			$namespacePath = str_replace("\\", "/", $namespace);
+			$pharPath = "$namespacePath/$className";
+		} else{
+			$relativePath = str_replace("$basePath/src/", "", $file->getPathname());
+			$pharPath = $relativePath;
+		}
+
+		$phar->addFile($file->getPathname(), $pharPath);
+		echo "Added{$file->getPathname()} as $pharPath\n";
 	}
 }
 
