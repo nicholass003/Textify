@@ -37,9 +37,6 @@ if(!isset($virionConfig['name']) || !isset($virionConfig['version'])){
 	die("Error: virion.yml must contain 'name' and 'version'.\n");
 }
 
-$name = $virionConfig['name'];
-$version = $virionConfig['version'];
-
 if(!is_dir("$basePath/builds")){
 	mkdir("$basePath/builds", 0777, true);
 }
@@ -51,7 +48,7 @@ if(file_exists($outputPath)){
 $phar = new Phar($outputPath);
 $phar->startBuffering();
 
-$directory = new RecursiveDirectoryIterator("$basePath/src");
+$directory = new RecursiveDirectoryIterator("$basePath/src", RecursiveDirectoryIterator::SKIP_DOTS);
 $iterator = new RecursiveIteratorIterator($directory);
 
 function getNamespaceFromFile(string $filePath) : ?string{
@@ -76,14 +73,14 @@ foreach($iterator as $file){
 
 		if($namespace !== null){
 			$namespacePath = str_replace("\\", "/", $namespace);
-			$pharPath = "$namespacePath/$className";
-		} else{
+			$pharPath = "src/$namespacePath/$className";
+		}else{
 			$relativePath = str_replace("$basePath/src/", "", $file->getPathname());
-			$pharPath = $relativePath;
+			$pharPath = "src/$relativePath";
 		}
 
 		$phar->addFile($file->getPathname(), $pharPath);
-		echo "Added{$file->getPathname()} as $pharPath\n";
+		echo "Added {$file->getPathname()} as $pharPath\n";
 	}
 }
 
