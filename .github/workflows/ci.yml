@@ -20,7 +20,7 @@ jobs:
         run: composer install --ignore-platform-reqs
 
       - name: Build Virion
-        run: php scripts/build-virion.php
+        run: php -d phar.readonly=0 scripts/build-virion.php
 
       - name: Push to poggit/stable
         run: |
