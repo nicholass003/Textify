@@ -55,7 +55,7 @@ $directory = new RecursiveDirectoryIterator("$basePath/src");
 $iterator = new RecursiveIteratorIterator($directory);
 
 foreach($iterator as $file){
-	if($file->isFile() && pathinfo($file, PATHINFO_EXTENSION) === 'php'){
+	if($file->isFile() && pathinfo($file->getPathname(), PATHINFO_EXTENSION) === 'php'){
 		$relativePath = str_replace("$basePath/", "", $file->getPathname());
 		$phar->addFile($file->getPathname(), $relativePath);
 	}
