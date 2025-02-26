@@ -3,24 +3,36 @@ on:
   push:
     branches: [main]
 jobs:
-  pharynx:
-    name: build phar
+  build-virion:
+    name: Build Virion
     permissions:
       contents: write
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: "8.2"
           tools: composer
-      - run: composer install --ignore-platform-reqs
-      - uses: SOF3/pharynx@v0.2
-        id: pharynx
-        with:
-          additional-assets: |
-            assets/icon.png
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Textify.phar
-          path: ${{steps.pharynx.outputs.output-phar}}
+
+      - name: Install Dependencies
+        run: composer install --ignore-platform-reqs
+
+      - name: Build Virion
+        run: php scripts/build-virion.php
+
+      - name: Push to poggit/stable
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git branch -D poggit/stable || true
+          
+          git checkout -b poggit/stable
+          
+          git add .
+          
+          git commit -m "Update poggit/stable with latest build"
+          
+          git push --force origin poggit/stable
