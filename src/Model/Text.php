@@ -153,7 +153,7 @@ final class Text implements Model, \JsonSerializable{
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
 			Model::TEXT => $this->text,
-			Model::SKIN => null,
+			Model::SKIN => [],
 			Model::POSITION => [
 				Model::POSITION_X => $this->position->x,
 				Model::POSITION_Y => $this->position->y,

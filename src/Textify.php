@@ -36,6 +36,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use Ramsey\Uuid\Uuid;
+use function count;
 use function is_array;
 use function json_decode;
 
@@ -76,7 +77,7 @@ final class Textify{
 				$data[Model::TEXT],
 				Position::fromObject(new Vector3($pos[Model::POSITION_X], $pos[Model::POSITION_Y], $pos[Model::POSITION_Z]), Server::getInstance()->getWorldManager()->getWorldByName($pos[Model::POSITION_WORLD])),
 				$data[Model::ACTOR_ID],
-				$skinData !== null ? [
+				count($skinData) > 0 ? [
 					self::TAG_SKIN => new Skin(
 						$skinData[Model::SKIN_ID],
 						$skinData[Model::SKIN_DATA],
