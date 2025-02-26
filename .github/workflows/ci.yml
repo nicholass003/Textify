@@ -34,9 +34,9 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
           COMMIT_MESSAGE=$(git log -1 --pretty=format:%s)
-          git branch -D poggit/stable || true
           
-          git checkout -b poggit/stable
+          git fetch origin poggit/stable || true
+          git checkout -B poggit/stable origin/poggit/stable || git checkout -b poggit/stable
           
           git add .
           

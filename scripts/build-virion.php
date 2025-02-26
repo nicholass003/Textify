@@ -72,8 +72,8 @@ foreach($iterator as $file){
 		$className = basename($file->getPathname());
 
 		if($namespace !== null){
-			$namespacePath = "src/" . str_replace("\\", "/", $namespace);
-			$pharPath = "$namespacePath/$className";
+			$namespacePath = str_replace("\\", "/", $namespace);
+			$pharPath = "src/$namespacePath/$className";
 		}else{
 			$relativePath = str_replace("$basePath/src/", "", $file->getPathname());
 			$pharPath = "src/$relativePath";
