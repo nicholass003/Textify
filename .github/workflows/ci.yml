@@ -22,6 +22,12 @@ jobs:
       - name: Build Virion
         run: php -d phar.readonly=0 scripts/build-virion.php
 
+      - name: Remove .phar from commit
+        run: |
+          echo "builds/" >> .gitignore
+          rm -rf builds/Textify.phar
+          git rm --cached builds/Textify.phar || true
+
       - name: Push to poggit/stable
         run: |
           git config --global user.name "github-actions[bot]"
