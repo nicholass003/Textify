@@ -26,9 +26,9 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Model;
 
-enum Action{
-	case ADD;
-	case EDIT;
-	case MOVE;
-	case REMOVE;
+enum Action : int{
+	case ADD = 0;
+	case EDIT = 1;
+	case MOVE = 2;
+	case REMOVE = 3;
 }
