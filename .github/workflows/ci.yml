@@ -56,11 +56,11 @@ jobs:
           build-by-default: true
           branches:
             - poggit/${{ github.ref_name }}
-            projects:
-              Textify:
-                path: ""
-                model: virion
-                type: library
+          projects:
+            Textify:
+              path: ""
+              model: virion
+              type: library
           ...
           EOL
 
