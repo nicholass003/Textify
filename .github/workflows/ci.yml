@@ -62,6 +62,7 @@ jobs:
                 model: virion
                 type: library
           ...
+          EOL
 
       - name: Commit and Push Extracted Files
         run: |
