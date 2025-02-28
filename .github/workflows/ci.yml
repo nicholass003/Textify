@@ -71,6 +71,6 @@ jobs:
 
           git add --force .
 
-          git commit -m "$COMMIT_MESSAGE" || git commit --allow-empty -m "$COMMIT_MESSAGE"
+          git commit -m "$COMMIT_MESSAGE" || git commit --allow-empty -m "[NOTHING]: $COMMIT_MESSAGE"
 
           git push --force origin poggit/${{ github.ref_name }}
