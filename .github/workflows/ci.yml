@@ -48,7 +48,21 @@ jobs:
             || true
           cp -r extracted/* .
           rm -rf extracted
-          echo '{"projects":{"Textify":{"path":".","lint":false,"model":"virion","type":"library"}}}' >> .poggit.yml
+
+      - name: Generate Poggit-CI Manifest
+        run: |
+          cat > .poggit.yml <<EOL
+          --- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/nicholass003/Textify
+          build-by-default: true
+          branches:
+            - poggit/${{ github.ref_name }}
+            projects:
+              Textify:
+                path: ""
+                model: virion
+                type: library
+          ...
+
 
       - name: Commit and Push Extracted Files
         run: |
