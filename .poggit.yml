@@ -1,1 +1,10 @@
-{"projects":{"Textify":{"path":".","lint":false,"model":"virion","type":"library"}}}
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/nicholass003/Textify
+build-by-default: true
+branches:
+  - poggit/main
+  projects:
+    Textify:
+      path: ""
+      model: virion
+      type: library
+...
