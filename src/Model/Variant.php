@@ -34,6 +34,7 @@ enum Variant : string{
 
 	public static function fromString(string $name) : self{
 		return match(strtolower($name)){
+			"npc" => self::NPC,
 			"text" => self::TEXT,
 		};
 	}
