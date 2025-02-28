@@ -2,9 +2,9 @@
 build-by-default: true
 branches:
   - poggit/main
-  projects:
-    Textify:
-      path: ""
-      model: virion
-      type: library
+projects:
+  Textify:
+    path: ""
+    model: virion
+    type: library
 ...
