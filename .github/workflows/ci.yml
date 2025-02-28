@@ -22,24 +22,41 @@ jobs:
       - name: Build Virion
         run: php -d phar.readonly=0 scripts/build-virion.php
 
-      - name: Remove .phar from commit
+      - name: Checkout corresponding Poggit branch
         run: |
-          echo "builds/" >> .gitignore
-          rm -rf builds/Textify.phar
-          git rm --cached builds/Textify.phar || true
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=format:%s)" >> $GITHUB_ENV
 
-      - name: Push to poggit/stable
+          git fetch origin poggit/${{ github.ref_name }} || true
+          git checkout -B poggit/${{ github.ref_name }} origin/poggit/${{ github.ref_name }} || git checkout -b poggit/${{ github.ref_name }}
+
+      - name: Extract .phar file
+        run: |
+          mkdir -p extracted
+          php -r "
+            \$phar = new Phar('builds/Textify.phar');
+            \$phar->extractTo('extracted', null, true);
+          "
+
+      - name: Prepare extracted files for commit
+        run: |
+          find . -mindepth 1 \
+            ! -name ".git" ! -path "./.git/*" \
+            ! -name "extracted" ! -path "./extracted/*" \
+            ! -name "README.md" \
+            ! -name "LICENSE" \
+            -exec rm -rf {} + \
+            || true
+          cp -r extracted/* .
+          rm -rf extracted
+          echo '{"projects":{"Textify":{"path":".","lint":false,"model":"virion","type":"library"}}}' >> .poggit.yml
+
+      - name: Commit and Push Extracted Files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          COMMIT_MESSAGE=$(git log -1 --pretty=format:%s)
-          
-          git fetch origin poggit/stable || true
-          git checkout -B poggit/stable origin/poggit/stable || git checkout -b poggit/stable
-          
-          git add .
-          
-          git commit -m "$COMMIT_MESSAGE"
-          
-          git push --force origin poggit/stable
+
+          git add --force .
+
+          git commit -m "$COMMIT_MESSAGE" || git commit --allow-empty -m "$COMMIT_MESSAGE"
+
+          git push --force origin poggit/${{ github.ref_name }}
