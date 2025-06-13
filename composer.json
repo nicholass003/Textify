@@ -25,8 +25,5 @@
             "spec": "3.0",
             "namespace-root": "nicholass003\\Textify\\Lib"
         }
-    },
-    "scripts": {
-        "build": "php -dphar.readonly=0 vendor/bin/pharynx -i=. -c -p=Textify.phar"
     }
 }
