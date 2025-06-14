@@ -55,11 +55,20 @@ final class Textify{
 	 * @return Model
 	 */
 	public static function create(Variant $variant, string $text, Position $position, ?string $actorId = null, array $extraData = []) : Model{
+		$factory = TextifyFactory::getInstance();
 		$id = $actorId !== null ? $actorId : Uuid::uuid4()->toString();
-		return match($variant){
+		if(($model = $factory->get($id)) !== null){
+			return $model;
+		}
+
+		$model = match($variant){
 			Variant::NPC => new NonPlayerCharacter($id, $text, $position, $extraData[self::TAG_SKIN], $extraData[self::TAG_COMPOUND] ?? null),
 			Variant::TEXT => new Text($id, $text, $position)
 		};
+
+		$factory->add($id, $model);
+
+		return $model;
 	}
 
 	/**

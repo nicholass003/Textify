@@ -105,7 +105,7 @@ final class NonPlayerCharacter extends Human implements Model, \JsonSerializable
 				SetActorDataPacket::create(
 					actorRuntimeId: $this->actorRuntimeId,
 					metadata: [
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text)
+						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->getTitle() . "\n" . $this->getText())
 					],
 					syncedProperties: new PropertySyncData([], []),
 					tick: 0
@@ -150,7 +150,7 @@ final class NonPlayerCharacter extends Human implements Model, \JsonSerializable
 	 */
 	private function internalMetadata() : array{
 		$networkData = $this->getAllNetworkData();
-		$networkData[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->text);
+		$networkData[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->getTitle() . "\n" . $this->getText());
 		$networkData[EntityMetadataProperties::ALWAYS_SHOW_NAMETAG] = new ByteMetadataProperty(1);
 		$networkData[EntityMetadataProperties::FLAGS] = LongMetadataProperty::buildFromFlags([
 			EntityMetadataFlags::IMMOBILE => true,
@@ -163,7 +163,8 @@ final class NonPlayerCharacter extends Human implements Model, \JsonSerializable
 		return [
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
-			Model::TEXT => $this->text,
+			Model::TITLE => $this->getTitle(),
+			Model::TEXT => $this->getText(),
 			Model::SKIN => [
 				Model::SKIN_ID => $this->skin->getSkinId(),
 				Model::SKIN_DATA => $this->skin->getSkinData(),
