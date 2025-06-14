@@ -26,16 +26,28 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Trait;
 
+use nicholass003\Textify\Lib\Model\Model;
+
 trait NameableTrait{
 
-	private string $text;
+	/** @var string[] */
+	private array $texts = [];
 
 	public function getText() : string{
-		return $this->text;
+		return $this->text[Model::TEXT];
 	}
 
 	public function setText(string $text) : self{
-		$this->text = $text;
+		$this->text[Model::TEXT] = $text;
+		return $this;
+	}
+
+	public function getTitle() : string{
+		return $this->title[Model::TITLE];
+	}
+
+	public function setTitle(string $title) : self{
+		$this->title[Model::TITLE] = $title;
 		return $this;
 	}
 }

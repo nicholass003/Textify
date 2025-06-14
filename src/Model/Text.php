@@ -87,7 +87,7 @@ final class Text implements Model, \JsonSerializable{
 							EntityMetadataFlags::IMMOBILE => true,
 							EntityMetadataFlags::FIRE_IMMUNE => true
 						]),
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text),
+						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->getTitle() . "\n" . $this->getText()),
 						EntityMetadataProperties::SCALE => new FloatMetadataProperty(0.0),
 						EntityMetadataProperties::VARIANT => new IntMetadataProperty(TypeConverter::getInstance()->getBlockTranslator()->internalIdToNetworkId(VanillaBlocks::AIR()->getStateId()))
 					],
@@ -99,7 +99,7 @@ final class Text implements Model, \JsonSerializable{
 				SetActorDataPacket::create(
 					actorRuntimeId: $this->actorRuntimeId,
 					metadata: [
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text)
+						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->getTitle() . "\n" . $this->getText())
 					],
 					syncedProperties: new PropertySyncData([], []),
 					tick: 0
@@ -128,7 +128,7 @@ final class Text implements Model, \JsonSerializable{
 							EntityMetadataFlags::IMMOBILE => true,
 							EntityMetadataFlags::FIRE_IMMUNE => true
 						]),
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->text),
+						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->getTitle() . "\n" . $this->getText()),
 						EntityMetadataProperties::SCALE => new FloatMetadataProperty(0.0),
 						EntityMetadataProperties::VARIANT => new IntMetadataProperty(TypeConverter::getInstance()->getBlockTranslator()->internalIdToNetworkId(VanillaBlocks::AIR()->getStateId()))
 					],
@@ -152,7 +152,8 @@ final class Text implements Model, \JsonSerializable{
 		return [
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
-			Model::TEXT => $this->text,
+			Model::TITLE => $this->getTitle(),
+			Model::TEXT => $this->getText(),
 			Model::SKIN => [],
 			Model::POSITION => [
 				Model::POSITION_X => $this->position->x,

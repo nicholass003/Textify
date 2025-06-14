@@ -32,6 +32,7 @@ use pocketmine\world\Position;
 interface Model{
 
 	public const ACTOR_ID = "actor_id";
+	public const TITLE = "title";
 	public const TEXT = "text";
 	public const VARIANT = "variant";
 
@@ -67,6 +68,10 @@ interface Model{
 	public function getText() : string;
 
 	public function setText(string $text) : self;
+
+	public function getTitle() : string;
+
+	public function setTitle(string $title) : self;
 
 	public function send(Player $player, Action $action) : void;
 }
