@@ -26,15 +26,27 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Model;
 
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
-interface Model{
+/**
+ * Interface Model
+ *
+ * Represents a Textify model entity such as FloatingText or NonPlayerCharacter.
+ * Provides structure for serialization, behavior, and entity display control.
+ */
+interface Model extends \JsonSerializable{
 
+	// === NBT Key ===
+	public const TAG_MODEL = "Model";
+
+	// === JSON Serialization Keys ===
 	public const ACTOR_ID = "actor_id";
 	public const TITLE = "title";
 	public const TEXT = "text";
 	public const VARIANT = "variant";
+	public const TAG = "tag";
 
 	public const POSITION = "position";
 	public const POSITION_X = "x";
@@ -42,36 +54,153 @@ interface Model{
 	public const POSITION_Z = "z";
 	public const POSITION_WORLD = "world";
 
-	public const SKIN = "skin";
-	public const SKIN_ID = "skin_id";
-	public const SKIN_DATA = "skin_data";
-	public const CAPE_DATA = "cape_data";
-	public const GEOMETRY_NAME = "geometry_name";
-	public const GEOMETRY_DATA = "geometry_data";
+	public const TAG_SKIN = "Skin"; //TAG_Compound
+	public const TAG_SKIN_NAME = "Name"; //TAG_String
+	public const TAG_SKIN_DATA = "Data"; //TAG_ByteArray
+	public const TAG_SKIN_CAPE_DATA = "CapeData"; //TAG_ByteArray
+	public const TAG_SKIN_GEOMETRY_NAME = "GeometryName"; //TAG_String
+	public const TAG_SKIN_GEOMETRY_DATA = "GeometryData"; //TAG_ByteArray
 
+	/**
+	 * Returns the runtime ID used in packets.
+	 *
+	 * @return int
+	 */
 	public function getActorRuntimeId() : int;
 
+	/**
+	 * Sets the runtime ID used in packets.
+	 *
+	 * @param int $actorRuntimeId
+	 *
+	 * @return $this
+	 */
 	public function setActorRuntimeId(int $actorRuntimeId) : self;
 
-	public function getVariant() : Variant;
-
-	public function setVariant(Variant $variant) : self;
-
+	/**
+	 * Returns the internal actor ID (unique model identifier).
+	 *
+	 * @return string
+	 */
 	public function getActorId() : string;
 
+	/**
+	 * Sets the internal actor ID (unique model identifier).
+	 *
+	 * @param string $actorId
+	 *
+	 * @return $this
+	 */
 	public function setActorId(string $actorId) : self;
 
-	public function getPosition() : Position;
+	/**
+	 * Gets the variant @see Variant.
+	 *
+	 * @return Variant
+	 */
+	public function getVariant() : Variant;
 
-	public function setPosition(Position $position) : self;
+	/**
+	 * Sets the variant @see Variant.
+	 *
+	 * @param Variant $variant
+	 *
+	 * @return $this
+	 */
+	public function setVariant(Variant $variant) : self;
 
-	public function getText() : string;
-
-	public function setText(string $text) : self;
-
+	/**
+	 * Gets the display title of the entity.
+	 *
+	 * @return string
+	 */
 	public function getTitle() : string;
 
+	/**
+	 * Sets the display title of the entity.
+	 *
+	 * @param string $title
+	 *
+	 * @return $this
+	 */
 	public function setTitle(string $title) : self;
 
+	/**
+	 * Gets the main display text below the title.
+	 *
+	 * @return string
+	 */
+	public function getText() : string;
+
+	/**
+	 * Sets the main display text below the title.
+	 *
+	 * @param string $text
+	 *
+	 * @return $this
+	 */
+	public function setText(string $text) : self;
+
+	/**
+	 * Gets the position of the model in the world.
+	 *
+	 * @return Position
+	 */
+	public function getModelPosition() : Position;
+
+	/**
+	 * Sets the position of the model in the world.
+	 *
+	 * @param Position $position
+	 *
+	 * @return $this
+	 */
+	public function setModelPosition(Position $position) : self;
+
+	/**
+	 * Gets all players currently viewing the model's position in the world.
+	 *
+	 * @return Player[]
+	 */
+	public function getViewers() : array;
+
+	/**
+	 * Sends the model packet to a player.
+	 *
+	 * @param Player $player
+	 * @param Action $action
+	 *
+	 * @return void
+	 */
 	public function send(Player $player, Action $action) : void;
+
+	/**
+	 * Updates the model with a specified action.
+	 *
+	 * @param Action $action
+	 *
+	 * @return void
+	 */
+	public function update(Action $action) : void;
+
+	/**
+	 * @return void
+	 */
+	public function destroy() : void;
+
+	/**
+	 * Gets the NBT tag of the model.
+	 *
+	 * @return CompoundTag
+	 */
+	public function getCompoundTag() : CompoundTag;
+
+	/**
+	 * Sets the NBT tag of the model.
+	 *
+	 * @param CompoundTag|null $tag
+	 *
+	 * @return self
+	 */
+	public function setCompoundTag(?CompoundTag $tag) : self;
 }

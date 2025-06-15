@@ -26,35 +26,26 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Model;
 
+use nicholass003\Textify\Lib\TextifyFactory;
 use nicholass003\Textify\Lib\Trait\ActorTrait;
 use nicholass003\Textify\Lib\Trait\NameableTrait;
 use nicholass003\Textify\Lib\Trait\PositionTrait;
-use pocketmine\entity\Attribute;
-use pocketmine\entity\EntityDataHelper;
+use nicholass003\Textify\Lib\Utils;
 use pocketmine\entity\Human;
+use pocketmine\entity\Location;
 use pocketmine\entity\Skin;
-use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\AddActorPacket;
-use pocketmine\network\mcpe\protocol\RemoveActorPacket;
-use pocketmine\network\mcpe\protocol\SetActorDataPacket;
-use pocketmine\network\mcpe\protocol\types\entity\Attribute as NetworkAttribute;
-use pocketmine\network\mcpe\protocol\types\entity\ByteMetadataProperty;
-use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
-use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
-use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
-use pocketmine\network\mcpe\protocol\types\entity\LongMetadataProperty;
-use pocketmine\network\mcpe\protocol\types\entity\MetadataProperty;
-use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
-use pocketmine\network\mcpe\protocol\types\entity\StringMetadataProperty;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
-use function array_map;
+use function in_array;
 
-final class NonPlayerCharacter extends Human implements Model, \JsonSerializable{
+final class NonPlayerCharacter extends Human implements Model{
 	use ActorTrait;
 	use NameableTrait;
 	use PositionTrait;
+
+	/** @var CompoundTag|null Custom tags for storing Textify model data */
+	private ?CompoundTag $tag = null;
 
 	public function __construct(
 		string $actorId,
@@ -64,120 +55,90 @@ final class NonPlayerCharacter extends Human implements Model, \JsonSerializable
 		?CompoundTag $nbt = null,
 		int $actorRuntimeId = 0
 	){
+		$this->setTitle("");
 		$this->setText($text);
-		$this->setPosition($position);
+		$this->setModelPosition($position);
 		$this->setActorRuntimeId($actorRuntimeId);
-		$this->setVariant(Variant::TEXT);
+		$this->setVariant(Variant::PLAYER);
 		$this->setActorId($actorId);
 		$this->setSkin($skin);
-		if($nbt !== null){
-			$this->motion = EntityDataHelper::parseVec3($nbt, self::TAG_MOTION, true);
-		}else{
-			$this->motion = Vector3::zero();
-		}
+		$this->setCompoundTag($nbt->getCompoundTag(self::TAG_MODEL));
+		parent::__construct(Location::fromObject($position, $position->getWorld()), $skin, $nbt);
+	}
 
-		$this->initEntity($nbt ?? new CompoundTag());
+	protected function initEntity(CompoundTag $nbt) : void{
+		parent::initEntity($nbt);
+		$this->setNameTagAlwaysVisible();
+		$this->setHasGravity(false);
+		$this->setNoClientPredictions();
+		$this->setCanSaveWithChunk(false);
+	}
+
+	public function setText(string $text) : self{
+		$this->texts[Model::TEXT] = $text;
+		$this->setNameTag($this->getTitle() . "\n" . $this->getText());
+		return $this;
 	}
 
 	public function send(Player $player, Action $action) : void{
-		$session = $player->getNetworkSession();
-		$packets = match($action){
-			Action::ADD => [
-				AddActorPacket::create(
-					actorUniqueId: $this->actorRuntimeId,
-					actorRuntimeId: $this->actorRuntimeId,
-					type: EntityIds::PLAYER,
-					position: $this->position,
-					motion: $this->getMotion(),
-					pitch: $this->location->pitch,
-					yaw: $this->location->yaw,
-					headYaw: $this->location->yaw,
-					bodyYaw: $this->location->yaw,
-					attributes: array_map(function(Attribute $attr) : NetworkAttribute{
-						return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue(), []);
-					}, $this->attributeMap->getAll()),
-					metadata: $this->internalMetadata(),
-					syncedProperties: new PropertySyncData([], []),
-					links: []
-				)
-			],
-			Action::EDIT => [
-				SetActorDataPacket::create(
-					actorRuntimeId: $this->actorRuntimeId,
-					metadata: [
-						EntityMetadataProperties::NAMETAG => new StringMetadataProperty($this->getTitle() . "\n" . $this->getText())
-					],
-					syncedProperties: new PropertySyncData([], []),
-					tick: 0
-				)
-			],
-			Action::MOVE => [
-				RemoveActorPacket::create(
-					actorUniqueId: $this->actorRuntimeId
-				),
-				AddActorPacket::create(
-					actorUniqueId: $this->actorRuntimeId,
-					actorRuntimeId: $this->actorRuntimeId,
-					type: EntityIds::PLAYER,
-					position: $this->position,
-					motion: $this->getMotion(),
-					pitch: $this->location->pitch,
-					yaw: $this->location->yaw,
-					headYaw: $this->location->yaw,
-					bodyYaw: $this->location->yaw,
-					attributes: array_map(function(Attribute $attr) : NetworkAttribute{
-						return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue(), []);
-					}, $this->attributeMap->getAll()),
-					metadata: $this->internalMetadata(),
-					syncedProperties: new PropertySyncData([], []),
-					links: []
-				)
-			],
-			Action::REMOVE => [
-				RemoveActorPacket::create(
-					actorUniqueId: $this->actorRuntimeId
-				)
-			],
-		};
+		$factory = TextifyFactory::getInstance();
+		switch($action){
+			case Action::ADD:
+				if(!$factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$factory->spawnedTo($player, $this->actorRuntimeId);
+				}
+				break;
+			case Action::EDIT:
+				if(!$factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$action = Action::ADD;
+				}
+				break;
+			case Action::REMOVE:
+				if($factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$factory->despawnFrom($player, $this->actorRuntimeId);
+				}
+				break;
+		}
 
-		foreach($packets as $packet){
-			$session->sendDataPacket($packet);
+		match($action){
+			Action::ADD => $this->spawnTo($player),
+			Action::EDIT => $this->setNameTag($this->getTitle() . "\n" . $this->getText()),
+			Action::MOVE => $this->teleport($this->getModelPosition()),
+			Action::REMOVE => $this->flagForDespawn(),
+		};
+	}
+
+	public function update(Action $action) : void{
+		if(!in_array($action, [Action::EDIT, Action::MOVE], true)){
+			return;
+		}
+
+		foreach($this->getViewers() as $player){
+			$this->send($player, $action);
 		}
 	}
 
-	/**
-	 * @return MetadataProperty[]
-	 */
-	private function internalMetadata() : array{
-		$networkData = $this->getAllNetworkData();
-		$networkData[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->getTitle() . "\n" . $this->getText());
-		$networkData[EntityMetadataProperties::ALWAYS_SHOW_NAMETAG] = new ByteMetadataProperty(1);
-		$networkData[EntityMetadataProperties::FLAGS] = LongMetadataProperty::buildFromFlags([
-			EntityMetadataFlags::IMMOBILE => true,
-			EntityMetadataFlags::FIRE_IMMUNE => true
-		]);
-		return $networkData;
+	public function destroy() : void{
+		TextifyFactory::getInstance()->remove($this->actorId);
+		foreach($this->getViewers() as $player){
+			$this->send($player, Action::REMOVE);
+		}
 	}
 
-	public function jsonSerialize() : mixed{
+	public function jsonSerialize() : array{
 		return [
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
 			Model::TITLE => $this->getTitle(),
 			Model::TEXT => $this->getText(),
-			Model::SKIN => [
-				Model::SKIN_ID => $this->skin->getSkinId(),
-				Model::SKIN_DATA => $this->skin->getSkinData(),
-				Model::CAPE_DATA => $this->skin->getCapeData(),
-				Model::GEOMETRY_NAME => $this->skin->getGeometryName(),
-				Model::GEOMETRY_DATA => $this->skin->getGeometryData()
-			],
+			Model::TAG_SKIN => Utils::writeTagToBase64(Utils::writeSkinNBT($this->skin)),
 			Model::POSITION => [
-				Model::POSITION_X => $this->position->x,
-				Model::POSITION_Y => $this->position->y,
-				Model::POSITION_Z => $this->position->z,
-				Model::POSITION_WORLD => $this->position->getWorld()->getFolderName()
-			]
+				Model::POSITION_X => $this->modelPosition->x,
+				Model::POSITION_Y => $this->modelPosition->y,
+				Model::POSITION_Z => $this->modelPosition->z,
+				Model::POSITION_WORLD => $this->modelPosition->getWorld()->getFolderName()
+			],
+			Model::TAG => Utils::writeTagToBase64($this->tag)
 		];
 	}
 }
