@@ -26,18 +26,44 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Trait;
 
+use pocketmine\player\Player;
 use pocketmine\world\Position;
 
 trait PositionTrait{
 
-	private Position $position;
+	private Position $modelPosition;
 
-	public function getPosition() : Position{
-		return $this->position;
+	public function getModelPosition() : Position{
+		return $this->modelPosition;
 	}
 
-	public function setPosition(Position $position) : self{
-		$this->position = $position;
+	public function setModelPosition(Position $modelPosition) : self{
+		$this->modelPosition = $modelPosition;
 		return $this;
+	}
+
+	/**
+	 * Returns a list of players who are currently able to view or are near this position.
+	 *
+	 * This typically includes all players whose render distance covers the current position,
+	 * as determined by the world’s visibility system.
+	 *
+	 * @return Player[]
+	 */
+	public function getViewers() : array{
+		$this->tryLoadChunk();
+		return $this->modelPosition->getWorld()->getViewersForPosition($this->modelPosition);
+	}
+
+	protected function tryLoadChunk() : void{
+		$world = $this->modelPosition->getWorld();
+		if($world === null){
+			return;
+		}
+		$chunkX = $this->modelPosition->getFloorX() >> 4;
+		$chunkZ = $this->modelPosition->getFloorZ() >> 4;
+		if(!$world->isChunkLoaded($chunkX, $chunkZ)){
+			$world->loadChunk($chunkX, $chunkZ);
+		}
 	}
 }

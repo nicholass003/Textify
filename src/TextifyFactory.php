@@ -28,9 +28,24 @@ namespace nicholass003\Textify\Lib;
 
 use nicholass003\Textify\Lib\Exception\TextifyException;
 use nicholass003\Textify\Lib\Model\Model;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\Server;
+use function array_values;
+use function file_exists;
+use function file_get_contents;
+use function file_put_contents;
+use function is_array;
+use function json_decode;
+use function json_encode;
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 
 final class TextifyFactory{
+
+	public const TEXT_DISPLAY = "minecraft:text_display";
 
 	private static ?TextifyFactory $instance = null;
 	private static ?Plugin $registrant = null;
@@ -43,11 +58,35 @@ final class TextifyFactory{
 		return self::$instance !== null;
 	}
 
-	public static function register(Plugin $plugin) : void{
+	public static function register(Plugin $plugin, bool $loadFromStorage = true) : void{
 		if(self::$instance === null){
 			self::$instance = new self();
 		}
 		self::$registrant = $plugin;
+
+		Server::getInstance()->getPluginManager()->registerEvents(new EventListener(), $plugin);
+
+		if($loadFromStorage){
+			$path = $plugin->getDataFolder() . Textify::STORAGE_FILENAME;
+
+			if(file_exists($path)){
+				$json = file_get_contents($path);
+				$data = json_decode($json, true);
+
+				if(isset($data[Textify::STORAGE_KEY_MARKER]) && $data[Textify::STORAGE_KEY_MARKER] === Textify::STORAGE_VALUE_MARKER){
+					foreach($data["models"] ?? [] as $entry){
+						try{
+							$model = Textify::fromString(json_encode($entry));
+							self::getInstance()->add($model);
+						}catch(\Throwable $e){
+							$plugin->getLogger()->warning("[Textify] Failed to load model: " . $e->getMessage());
+						}
+					}
+				}else{
+					$plugin->getLogger()->warning("[Textify] Detected a storage file, but it appears to be invalid or unrelated to Textify: $path");
+				}
+			}
+		}
 	}
 
 	public static function getRegistrant() : Plugin{
@@ -70,5 +109,71 @@ final class TextifyFactory{
 
 	public function get(string $actorId) : ?Model{
 		return $this->models[$actorId] ?? null;
+	}
+
+	/**
+	 * @return Model[]
+	 */
+	public function getAll() : array{
+		return $this->models;
+	}
+
+	public function save() : void{
+		$plugin = self::getRegistrant();
+		$factory = self::getInstance();
+		$path = $plugin->getDataFolder() . Textify::STORAGE_FILENAME;
+
+		if(file_exists($path)){
+			$content = file_get_contents($path);
+			$json = json_decode($content, true);
+
+			if(!is_array($json) || !isset($json[Textify::STORAGE_KEY_MARKER]) || $json[Textify::STORAGE_KEY_MARKER] !== Textify::STORAGE_VALUE_MARKER){
+				throw new TextifyException("Cannot save: '" . Textify::STORAGE_FILENAME . "' exists and is not recognized as a Textify file.");
+			}
+		}
+
+		$data = [
+			Textify::STORAGE_KEY_MARKER => Textify::STORAGE_VALUE_MARKER,
+			"models" => array_values($factory->getAll())
+		];
+
+		file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+	}
+
+	/** @var array<string, <int, bool>> */
+	private array $spawned = [];
+
+	public function hasSpawnedTo(Player $player, int $actorRuntimeId) : bool{
+		return isset($this->spawned[$player->getUniqueId()->getBytes()][$actorRuntimeId]);
+	}
+
+	public function spawnedTo(Player $player, int $actorRuntimeId) : void{
+		$this->spawned[$player->getUniqueId()->getBytes()][$actorRuntimeId] = true;
+	}
+
+	public function despawnFrom(Player $player, int $actorRuntimeId) : void{
+		unset($this->spawned[$player->getUniqueId()->getBytes()][$actorRuntimeId]);
+	}
+
+	public function despawnAllFrom(Player $player) : void{
+		unset($this->spawned[$player->getUniqueId()->getBytes()]);
+	}
+}
+
+class EventListener implements Listener{
+
+	/** @var TextifyFactory */
+	private TextifyFactory $factory;
+
+	public function __construct(){
+		$this->factory = TextifyFactory::getInstance();
+	}
+
+	/**
+	 * @priority LOWEST
+	 */
+	public function onPlayerQuit(PlayerQuitEvent $event) : void{
+		$player = $event->getPlayer();
+		$this->factory->despawnAllFrom($player);
 	}
 }

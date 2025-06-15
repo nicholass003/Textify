@@ -27,6 +27,7 @@ declare(strict_types=1);
 namespace nicholass003\Textify\Lib\Trait;
 
 use nicholass003\Textify\Lib\Model\Model;
+use pocketmine\nbt\tag\CompoundTag;
 
 trait NameableTrait{
 
@@ -34,20 +35,32 @@ trait NameableTrait{
 	private array $texts = [];
 
 	public function getText() : string{
-		return $this->text[Model::TEXT];
+		return $this->texts[Model::TEXT];
 	}
 
 	public function setText(string $text) : self{
-		$this->text[Model::TEXT] = $text;
+		$this->texts[Model::TEXT] = $text;
 		return $this;
 	}
 
 	public function getTitle() : string{
-		return $this->title[Model::TITLE];
+		return $this->texts[Model::TITLE];
 	}
 
 	public function setTitle(string $title) : self{
-		$this->title[Model::TITLE] = $title;
+		$this->texts[Model::TITLE] = $title;
+		return $this;
+	}
+
+	/** @var CompoundTag|null Custom tags for storing Textify model data */
+	private ?CompoundTag $tag = null;
+
+	public function getCompoundTag() : CompoundTag{
+		return $this->tag ?? new CompoundTag();
+	}
+
+	public function setCompoundTag(?CompoundTag $tag) : self{
+		$this->tag = $tag;
 		return $this;
 	}
 }

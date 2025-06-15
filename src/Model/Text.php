@@ -26,10 +26,13 @@ declare(strict_types=1);
 
 namespace nicholass003\Textify\Lib\Model;
 
+use nicholass003\Textify\Lib\TextifyFactory;
 use nicholass003\Textify\Lib\Trait\ActorTrait;
 use nicholass003\Textify\Lib\Trait\NameableTrait;
 use nicholass003\Textify\Lib\Trait\PositionTrait;
+use nicholass003\Textify\Lib\Utils;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\network\mcpe\protocol\RemoveActorPacket;
@@ -45,8 +48,9 @@ use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
 use pocketmine\network\mcpe\protocol\types\entity\StringMetadataProperty;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use function in_array;
 
-final class Text implements Model, \JsonSerializable{
+final class Text implements Model{
 	use ActorTrait;
 	use NameableTrait;
 	use PositionTrait;
@@ -55,24 +59,46 @@ final class Text implements Model, \JsonSerializable{
 		string $actorId,
 		string $text,
 		Position $position,
+		?CompoundTag $tag = null,
 		int $actorRuntimeId = 0
 	){
+		$this->setTitle("");
 		$this->setText($text);
-		$this->setPosition($position);
+		$this->setModelPosition($position);
 		$this->setActorRuntimeId($actorRuntimeId);
 		$this->setVariant(Variant::TEXT);
 		$this->setActorId($actorId);
+		$this->setCompoundTag($tag->getCompoundTag(self::TAG_MODEL));
 	}
 
 	public function send(Player $player, Action $action) : void{
 		$session = $player->getNetworkSession();
+		$factory = TextifyFactory::getInstance();
+		switch($action){
+			case Action::ADD:
+				if(!$factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$factory->spawnedTo($player, $this->actorRuntimeId);
+				}
+				break;
+			case Action::EDIT:
+				if(!$factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$action = Action::ADD;
+				}
+				break;
+			case Action::REMOVE:
+				if($factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$factory->despawnFrom($player, $this->actorRuntimeId);
+				}
+				break;
+		}
+
 		$packets = match($action){
 			Action::ADD => [
 				AddActorPacket::create(
 					actorUniqueId: $this->actorRuntimeId,
 					actorRuntimeId: $this->actorRuntimeId,
 					type: EntityIds::FALLING_BLOCK,
-					position: $this->position,
+					position: $this->modelPosition,
 					motion: null,
 					pitch: 0,
 					yaw: 0,
@@ -113,7 +139,7 @@ final class Text implements Model, \JsonSerializable{
 					actorUniqueId: $this->actorRuntimeId,
 					actorRuntimeId: $this->actorRuntimeId,
 					type: EntityIds::FALLING_BLOCK,
-					position: $this->position,
+					position: $this->modelPosition,
 					motion: null,
 					pitch: 0,
 					yaw: 0,
@@ -148,19 +174,37 @@ final class Text implements Model, \JsonSerializable{
 		}
 	}
 
-	public function jsonSerialize() : mixed{
+	public function update(Action $action) : void{
+		if(!in_array($action, [Action::EDIT, Action::MOVE], true)){
+			return;
+		}
+
+		foreach($this->getViewers() as $player){
+			$this->send($player, $action);
+		}
+	}
+
+	public function destroy() : void{
+		TextifyFactory::getInstance()->remove($this->actorId);
+		foreach($this->getViewers() as $player){
+			$this->send($player, Action::REMOVE);
+		}
+	}
+
+	public function jsonSerialize() : array{
 		return [
 			Model::ACTOR_ID => $this->actorId,
 			Model::VARIANT => $this->variant,
 			Model::TITLE => $this->getTitle(),
 			Model::TEXT => $this->getText(),
-			Model::SKIN => [],
+			Model::TAG_SKIN => null,
 			Model::POSITION => [
-				Model::POSITION_X => $this->position->x,
-				Model::POSITION_Y => $this->position->y,
-				Model::POSITION_Z => $this->position->z,
-				Model::POSITION_WORLD => $this->position->getWorld()->getFolderName()
-			]
+				Model::POSITION_X => $this->modelPosition->x,
+				Model::POSITION_Y => $this->modelPosition->y,
+				Model::POSITION_Z => $this->modelPosition->z,
+				Model::POSITION_WORLD => $this->modelPosition->getWorld()->getFolderName()
+			],
+			Model::TAG => Utils::writeTagToBase64($this->tag)
 		];
 	}
 }
