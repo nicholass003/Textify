@@ -57,7 +57,8 @@ final class TextifyFactory{
 	/** @var Model[] */
 	private array $models = [];
 
-	public function add(string $actorId, Model $model) : void{
+	public function add(Model $model) : void{
+		$actorId = $model->getActorId();
 		if(!isset($this->models[$actorId])){
 			$this->models[$actorId] = $model;
 		}
