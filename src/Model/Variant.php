@@ -30,12 +30,10 @@ use function strtolower;
 
 enum Variant : string{
 	case NPC = "npc";
+	case PLAYER = "player";
 	case TEXT = "text";
 
-	public static function fromString(string $name) : self{
-		return match(strtolower($name)){
-			"npc" => self::NPC,
-			"text" => self::TEXT,
-		};
+	public static function fromString(string $name) : ?self{
+		return self::tryFrom(strtolower($name));
 	}
 }
