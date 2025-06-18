@@ -24,8 +24,8 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Exception;
+namespace Nicholass003\Textify\Lib\Exception;
 
 use Exception;
 
-final class TextifyInvalidDataException extends Exception{}
+final class TextifyException extends Exception{}

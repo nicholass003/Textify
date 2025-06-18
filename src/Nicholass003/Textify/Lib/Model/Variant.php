@@ -24,8 +24,16 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Exception;
+namespace Nicholass003\Textify\Lib\Model;
 
-use Exception;
+use function strtolower;
 
-final class TextifyException extends Exception{}
+enum Variant : string{
+	case NPC = "npc";
+	case PLAYER = "player";
+	case TEXT = "text";
+
+	public static function fromString(string $name) : ?self{
+		return self::tryFrom(strtolower($name));
+	}
+}

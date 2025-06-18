@@ -24,7 +24,7 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Model;
+namespace Nicholass003\Textify\Lib\Model;
 
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
