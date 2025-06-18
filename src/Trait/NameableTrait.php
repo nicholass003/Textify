@@ -24,9 +24,9 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Trait;
+namespace Nicholass003\Textify\Lib\Trait;
 
-use nicholass003\Textify\Lib\Model\Model;
+use Nicholass003\Textify\Lib\Model\Model;
 use pocketmine\nbt\tag\CompoundTag;
 
 trait NameableTrait{

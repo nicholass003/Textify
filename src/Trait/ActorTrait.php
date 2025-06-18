@@ -24,10 +24,10 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Trait;
+namespace Nicholass003\Textify\Lib\Trait;
 
-use nicholass003\Textify\Lib\Exception\TextifyException;
-use nicholass003\Textify\Lib\Model\Variant;
+use Nicholass003\Textify\Lib\Exception\TextifyException;
+use Nicholass003\Textify\Lib\Model\Variant;
 use pocketmine\entity\Entity;
 use Ramsey\Uuid\Uuid;
 

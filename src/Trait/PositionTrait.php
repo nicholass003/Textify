@@ -24,7 +24,7 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Trait;
+namespace Nicholass003\Textify\Lib\Trait;
 
 use pocketmine\player\Player;
 use pocketmine\world\Position;

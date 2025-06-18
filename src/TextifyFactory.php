@@ -24,10 +24,10 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib;
+namespace Nicholass003\Textify\Lib;
 
-use nicholass003\Textify\Lib\Exception\TextifyException;
-use nicholass003\Textify\Lib\Model\Model;
+use Nicholass003\Textify\Lib\Exception\TextifyException;
+use Nicholass003\Textify\Lib\Model\Model;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\Player;

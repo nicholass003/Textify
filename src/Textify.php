@@ -24,13 +24,13 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib;
+namespace Nicholass003\Textify\Lib;
 
-use nicholass003\Textify\Lib\Exception\TextifyInvalidDataException;
-use nicholass003\Textify\Lib\Model\Model;
-use nicholass003\Textify\Lib\Model\NonPlayerCharacter;
-use nicholass003\Textify\Lib\Model\Text;
-use nicholass003\Textify\Lib\Model\Variant;
+use Nicholass003\Textify\Lib\Exception\TextifyInvalidDataException;
+use Nicholass003\Textify\Lib\Model\Model;
+use Nicholass003\Textify\Lib\Model\NonPlayerCharacter;
+use Nicholass003\Textify\Lib\Model\Text;
+use Nicholass003\Textify\Lib\Model\Variant;
 use pocketmine\entity\Human;
 use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;

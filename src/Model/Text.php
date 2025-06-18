@@ -24,13 +24,13 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Model;
+namespace Nicholass003\Textify\Lib\Model;
 
-use nicholass003\Textify\Lib\TextifyFactory;
-use nicholass003\Textify\Lib\Trait\ActorTrait;
-use nicholass003\Textify\Lib\Trait\NameableTrait;
-use nicholass003\Textify\Lib\Trait\PositionTrait;
-use nicholass003\Textify\Lib\Utils;
+use Nicholass003\Textify\Lib\TextifyFactory;
+use Nicholass003\Textify\Lib\Trait\ActorTrait;
+use Nicholass003\Textify\Lib\Trait\NameableTrait;
+use Nicholass003\Textify\Lib\Trait\PositionTrait;
+use Nicholass003\Textify\Lib\Utils;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\TypeConverter;

@@ -23,7 +23,7 @@
     "extra": {
         "virion": {
             "spec": "3.0",
-            "namespace-root": "nicholass003\\Textify\\Lib"
+            "namespace-root": "Nicholass003\\Textify\\Lib"
         }
     }
 }

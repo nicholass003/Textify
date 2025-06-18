@@ -24,7 +24,7 @@
 
 declare(strict_types=1);
 
-namespace nicholass003\Textify\Lib\Exception;
+namespace Nicholass003\Textify\Lib\Exception;
 
 use Exception;
 
