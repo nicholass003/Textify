@@ -28,11 +28,17 @@ namespace Nicholass003\Textify\Lib;
 
 use Nicholass003\Textify\Lib\Exception\TextifyException;
 use Nicholass003\Textify\Lib\Model\Model;
+use Nicholass003\Textify\Lib\Model\NonPlayerCharacter;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Human;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
+use pocketmine\world\World;
 use function array_values;
 use function file_exists;
 use function file_get_contents;
@@ -44,8 +50,6 @@ use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
 
 final class TextifyFactory{
-
-	public const TEXT_DISPLAY = "minecraft:text_display";
 
 	private static ?TextifyFactory $instance = null;
 	private static ?Plugin $registrant = null;
@@ -63,6 +67,11 @@ final class TextifyFactory{
 			self::$instance = new self();
 		}
 		self::$registrant = $plugin;
+
+		$entityFactory = EntityFactory::getInstance();
+		$entityFactory->register(NonPlayerCharacter::class, function(World $world, CompoundTag $nbt) : NonPlayerCharacter{
+			return new NonPlayerCharacter(EntityDataHelper::parseLocation($nbt, $world)->asPosition(), Human::parseSkinNBT($nbt), $nbt);
+		}, ["NonPlayerCharacter"]);
 
 		Server::getInstance()->getPluginManager()->registerEvents(new EventListener(), $plugin);
 
