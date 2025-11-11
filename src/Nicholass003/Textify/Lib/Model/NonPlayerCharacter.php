@@ -37,6 +37,7 @@ use pocketmine\entity\Skin;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use Ramsey\Uuid\Uuid;
 use function in_array;
 
 final class NonPlayerCharacter extends Human implements Model{
@@ -48,19 +49,17 @@ final class NonPlayerCharacter extends Human implements Model{
 	private ?CompoundTag $tag = null;
 
 	public function __construct(
-		string $actorId,
-		string $text,
 		Position $position,
 		Skin $skin,
 		?CompoundTag $nbt = null,
 		int $actorRuntimeId = 0
 	){
 		$this->setTitle("");
-		$this->setText($text);
+		$this->setText("");
 		$this->setModelPosition($position);
 		$this->setActorRuntimeId($actorRuntimeId);
 		$this->setVariant(Variant::PLAYER);
-		$this->setActorId($actorId);
+		$this->setActorId(Uuid::NIL);
 		$this->setSkin($skin);
 		$this->setCompoundTag($nbt->getCompoundTag(self::TAG_MODEL));
 		parent::__construct(Location::fromObject($position, $position->getWorld()), $skin, $nbt);

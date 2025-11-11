@@ -71,7 +71,9 @@ final class Textify{
 		}
 
 		$model = match($variant){
-			Variant::NPC, Variant::PLAYER => new NonPlayerCharacter($id, $text, $position, $extraData[self::TAG_SKIN], $extraData[self::TAG_COMPOUND] ?? null),
+			Variant::NPC, Variant::PLAYER => (new NonPlayerCharacter($position, $extraData[self::TAG_SKIN], $extraData[self::TAG_COMPOUND] ?? null))
+												->setActorId($id)
+												->setText($text),
 			Variant::TEXT => new Text($id, $text, $position, $extraData[self::TAG_COMPOUND] ?? null)
 		};
 		$model->setTitle($title);
