@@ -89,6 +89,7 @@ final class NonPlayerCharacter extends Human implements Model{
 				break;
 			case Action::EDIT:
 				if(!$factory->hasSpawnedTo($player, $this->actorRuntimeId)){
+					$factory->spawnedTo($player, $this->actorRuntimeId);
 					$action = Action::ADD;
 				}
 				break;
