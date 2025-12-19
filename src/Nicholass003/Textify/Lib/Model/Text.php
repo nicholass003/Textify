@@ -203,7 +203,7 @@ final class Text implements Model{
 				Model::POSITION_X => $this->modelPosition->x,
 				Model::POSITION_Y => $this->modelPosition->y,
 				Model::POSITION_Z => $this->modelPosition->z,
-				Model::POSITION_WORLD => $this->modelPosition->getWorld()->getFolderName()
+				Model::POSITION_WORLD => $this->worldName
 			],
 			Model::TAG => Utils::writeTagToBase64($this->tag)
 		];

@@ -33,12 +33,23 @@ trait PositionTrait{
 
 	private Position $modelPosition;
 
+	private string $worldName;
+
 	public function getModelPosition() : Position{
 		return $this->modelPosition;
 	}
 
 	public function setModelPosition(Position $modelPosition) : self{
 		$this->modelPosition = $modelPosition;
+		return $this;
+	}
+
+	public function getModelWorldName() : string{
+		return $this->worldName;
+	}
+
+	public function setModelWorldName(string $worldName) : self{
+		$this->worldName = $worldName;
 		return $this;
 	}
 
@@ -51,19 +62,22 @@ trait PositionTrait{
 	 * @return Player[]
 	 */
 	public function getViewers() : array{
-		$this->tryLoadChunk();
-		return $this->modelPosition->getWorld()->getViewersForPosition($this->modelPosition);
+		return $this->tryLoadChunk() ? $this->modelPosition->getWorld()->getViewersForPosition($this->modelPosition) : [];
 	}
 
-	protected function tryLoadChunk() : void{
-		$world = $this->modelPosition->getWorld();
-		if($world === null){
-			return;
+	protected function tryLoadChunk() : bool{
+		if(!$this->modelPosition->isValid()){
+			return false;
 		}
+		$world = $this->modelPosition->getWorld();
 		$chunkX = $this->modelPosition->getFloorX() >> 4;
 		$chunkZ = $this->modelPosition->getFloorZ() >> 4;
 		if(!$world->isChunkLoaded($chunkX, $chunkZ)){
-			$world->loadChunk($chunkX, $chunkZ);
+			$chunk = $world->loadChunk($chunkX, $chunkZ);
+			if($chunk === null){
+				return false;
+			}
 		}
+		return true;
 	}
 }

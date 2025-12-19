@@ -77,6 +77,9 @@ final class Textify{
 			Variant::TEXT => new Text($id, $text, $position, $extraData[self::TAG_COMPOUND] ?? null)
 		};
 		$model->setTitle($title);
+		if($model->getModelPosition()->isValid()){
+			$model->setModelWorldName($model->getModelPosition()->getWorld()->getFolderName());
+		}
 
 		$factory->add($model);
 
@@ -110,7 +113,7 @@ final class Textify{
 			$extraData[self::TAG_SKIN] = Human::parseSkinNBT(Utils::readTagFromBase64($skinData));
 		}
 		$pos = $data[Model::POSITION];
-		return self::create(
+		$textify = self::create(
 			Variant::fromString($data[Model::VARIANT]),
 			Position::fromObject(new Vector3($pos[Model::POSITION_X], $pos[Model::POSITION_Y], $pos[Model::POSITION_Z]), Server::getInstance()->getWorldManager()->getWorldByName($pos[Model::POSITION_WORLD])),
 			$data[Model::TITLE],
@@ -118,6 +121,8 @@ final class Textify{
 			$data[Model::ACTOR_ID],
 			$extraData
 		);
+		$textify->setModelWorldName($pos[Model::POSITION_WORLD]);
+		return $textify;
 	}
 }
 

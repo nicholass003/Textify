@@ -34,10 +34,12 @@ use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Human;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 use function array_values;
 use function file_exists;
@@ -179,10 +181,21 @@ class EventListener implements Listener{
 	}
 
 	/**
-	 * @priority LOWEST
+	 * @priority MONITOR
 	 */
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
 		$this->factory->despawnAllFrom($player);
+	}
+
+	/**
+	 * @priority MONITOR
+	 */
+	public function onWorldLoaded(WorldLoadEvent $event) : void{
+		foreach($this->factory->getAll() as $model){
+			if($model->getModelWorldName() === $event->getWorld()->getFolderName()){
+				$model->setModelPosition(Position::fromObject($model->getModelPosition(), $event->getWorld()));
+			}
+		}
 	}
 }

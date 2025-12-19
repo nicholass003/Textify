@@ -158,6 +158,22 @@ interface Model extends \JsonSerializable{
 	public function setModelPosition(Position $position) : self;
 
 	/**
+	 * Gets the world name of the model.
+	 *
+	 * @return string
+	 */
+	public function getModelWorldName() : string;
+
+	/**
+	 * Sets the world name of the model.
+	 *
+	 * @param string $worldName
+	 *
+	 * @return $this
+	 */
+	public function setModelWorldName(string $worldName) : self;
+
+	/**
 	 * Gets all players currently viewing the model's position in the world.
 	 *
 	 * @return Player[]
