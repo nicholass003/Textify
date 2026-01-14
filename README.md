@@ -91,6 +91,14 @@ Textify allows you to:
 
 ---
 
+## 📘 Documentation
+
+- **API Reference:** [docs/API.md](docs/API.md)
+
+The API documentation explains lifecycle management, model behavior, and performance considerations in detail.
+
+---
+
 ## 🔗 Compatibility
 
 * Latest **PocketMine-MP**
