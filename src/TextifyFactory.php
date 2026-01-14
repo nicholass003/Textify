@@ -57,7 +57,9 @@ final class TextifyFactory{
 	private static ?Plugin $registrant = null;
 
 	public static function getInstance() : TextifyFactory{
-		return self::$instance ?? throw new TextifyException('');
+		return self::$instance ?? throw new TextifyException(
+			"TextifyFactory is not registered. Call TextifyFactory::register(Plugin \$plugin) before using any Textify API."
+		);
 	}
 
 	public static function isRegistered() : bool{
