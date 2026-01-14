@@ -45,9 +45,6 @@ final class NonPlayerCharacter extends Human implements Model{
 	use NameableTrait;
 	use PositionTrait;
 
-	/** @var CompoundTag|null Custom tags for storing Textify model data */
-	private ?CompoundTag $tag = null;
-
 	public function __construct(
 		Position $position,
 		Skin $skin,
