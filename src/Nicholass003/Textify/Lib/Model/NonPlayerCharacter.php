@@ -45,9 +45,6 @@ final class NonPlayerCharacter extends Human implements Model{
 	use NameableTrait;
 	use PositionTrait;
 
-	/** @var CompoundTag|null Custom tags for storing Textify model data */
-	private ?CompoundTag $tag = null;
-
 	public function __construct(
 		Position $position,
 		Skin $skin,
@@ -61,7 +58,7 @@ final class NonPlayerCharacter extends Human implements Model{
 		$this->setVariant(Variant::PLAYER);
 		$this->setActorId(Uuid::NIL);
 		$this->setSkin($skin);
-		$this->setCompoundTag($nbt->getCompoundTag(self::TAG_MODEL));
+		$this->setCompoundTag(($nbt ?? CompoundTag::create())->getCompoundTag(self::TAG_MODEL));
 		parent::__construct(Location::fromObject($position, $position->getWorld()), $skin, $nbt);
 	}
 

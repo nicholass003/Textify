@@ -68,7 +68,7 @@ final class Text implements Model{
 		$this->setActorRuntimeId($actorRuntimeId);
 		$this->setVariant(Variant::TEXT);
 		$this->setActorId($actorId);
-		$this->setCompoundTag($tag->getCompoundTag(self::TAG_MODEL));
+		$this->setCompoundTag(($tag ?? CompoundTag::create())->getCompoundTag(self::TAG_MODEL));
 	}
 
 	public function send(Player $player, Action $action) : void{
